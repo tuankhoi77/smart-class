@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Catch-All Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation Helpers
+    function isValidUser(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 128 &&
+             data.email is string && data.email.size() > 0 && data.email.size() <= 128 &&
+             data.role in ['admin', 'teacher', 'student', 'parent'] &&
+             data.status in ['active', 'inactive'];
+    }
+
+    function isValidClassRoom(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.teacherId is string && data.teacherId.size() <= 128 &&
+             data.status in ['active', 'archived'];
+    }
+
+    function isValidStudent(data) {
+      return data.code is string && data.code.size() > 0 && data.code.size() <= 50 &&
+             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 100 &&
+             data.classId is string && data.classId.size() <= 128 &&
+             data.status in ['studying', 'transferred', 'suspended', 'reserved'];
+    }
+
+    function isValidQuestion(data) {
+      return data.code is string && data.code.size() > 0 && data.code.size() <= 50 &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 10000 &&
+             data.type in ['single_choice', 'multiple_choice', 'true_false_group', 'matching', 'ordering', 'fill_blank', 'short_answer', 'essay', 'passage_group'] &&
+             data.difficulty in ['knowledge', 'comprehension', 'application', 'high_application'] &&
+             data.status in ['draft', 'pending', 'approved', 'rejected', 'archived'];
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if isSignedIn() && resource.data.id == request.auth.uid;
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) && incoming().id == existing().id;
+      allow delete: if false;
+    }
+
+    // Classes Collection
+    match /classes/{classId} {
+      allow get: if isSignedIn() && isValidId(classId);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(classId) && isValidClassRoom(incoming());
+      allow update: if isSignedIn() && isValidId(classId) && isValidClassRoom(incoming());
+      allow delete: if isSignedIn() && isValidId(classId);
+    }
+
+    // Students Collection
+    match /students/{studentId} {
+      allow get: if isSignedIn() && isValidId(studentId);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(studentId) && isValidStudent(incoming());
+      allow update: if isSignedIn() && isValidId(studentId) && isValidStudent(incoming());
+      allow delete: if isSignedIn() && isValidId(studentId);
+    }
+
+    // Questions Collection (Teacher Question Bank)
+    match /questions/{questionId} {
+      allow get: if isSignedIn() && isValidId(questionId);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(questionId) && isValidQuestion(incoming());
+      allow update: if isSignedIn() && isValidId(questionId) && isValidQuestion(incoming());
+      allow delete: if isSignedIn() && isValidId(questionId);
+    }
+  }
+}

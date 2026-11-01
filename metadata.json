@@ -1,0 +1,7 @@
+{
+  "name": "SmartEdu - Quản Lý Lớp Học Thông Minh",
+  "description": "Nền tảng quản lý lớp học thông minh đa vai trò (Admin, Giáo viên, Học sinh, Phụ huynh) với điểm danh, bài tập, chấm điểm, hồ sơ 360°, công cụ lớp học và AI trợ giảng.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

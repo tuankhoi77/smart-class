@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile in the smart school system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user ID" },
+        "name": { "type": "string", "maxLength": 128, "description": "Display name" },
+        "email": { "type": "string", "maxLength": 128, "description": "User email address" },
+        "role": { "type": "string", "enum": ["admin", "teacher", "student", "parent"], "description": "Role in the school" },
+        "status": { "type": "string", "enum": ["active", "inactive"], "description": "Account status" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["id", "name", "email", "role", "status", "createdAt"]
+    },
+    "ClassRoom": {
+      "title": "ClassRoom",
+      "description": "Classroom managed by a teacher",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Class identifier" },
+        "name": { "type": "string", "maxLength": 100, "description": "Class name e.g. 10A1" },
+        "gradeName": { "type": "string", "maxLength": 50, "description": "Grade level" },
+        "teacherId": { "type": "string", "maxLength": 128, "description": "Assigned teacher UID" },
+        "teacherName": { "type": "string", "maxLength": 100, "description": "Teacher display name" },
+        "academicYear": { "type": "string", "maxLength": 30, "description": "School year e.g. 2026-2027" },
+        "room": { "type": "string", "maxLength": 50, "description": "Room number" },
+        "studentCount": { "type": "number", "description": "Current number of students" },
+        "status": { "type": "string", "enum": ["active", "archived"], "description": "Class status" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["id", "name", "teacherId", "status"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student in a classroom",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Student ID" },
+        "code": { "type": "string", "maxLength": 30, "description": "Student code" },
+        "fullName": { "type": "string", "maxLength": 100, "description": "Student full name" },
+        "gender": { "type": "string", "enum": ["male", "female"], "description": "Gender" },
+        "birthDate": { "type": "string", "description": "Date of birth" },
+        "classId": { "type": "string", "description": "Classroom ID" },
+        "className": { "type": "string", "maxLength": 50, "description": "Classroom name" },
+        "status": { "type": "string", "enum": ["studying", "transferred", "suspended", "reserved"] },
+        "gpa": { "type": "number", "description": "Current GPA" },
+        "attendanceRate": { "type": "number", "description": "Attendance percentage" }
+      },
+      "required": ["id", "code", "fullName", "classId", "status"]
+    },
+    "QuestionBankItem": {
+      "title": "QuestionBankItem",
+      "description": "Pedagogical question stored in teacher question bank",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique question ID" },
+        "code": { "type": "string", "maxLength": 50, "description": "Question code" },
+        "type": { "type": "string", "enum": ["single_choice", "multiple_choice", "true_false_group", "matching", "ordering", "fill_blank", "short_answer", "essay", "passage_group"] },
+        "content": { "type": "string", "maxLength": 5000, "description": "Question content" },
+        "grade": { "type": "string", "maxLength": 30, "description": "Grade level" },
+        "subject": { "type": "string", "maxLength": 50, "description": "Subject name" },
+        "difficulty": { "type": "string", "enum": ["knowledge", "comprehension", "application", "high_application"] },
+        "points": { "type": "number", "description": "Default points" },
+        "status": { "type": "string", "enum": ["draft", "pending", "approved", "rejected", "archived"] },
+        "authorId": { "type": "string", "description": "Teacher UID who created the question" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["id", "code", "type", "content", "subject", "difficulty", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile collection"
+    },
+    "/classes/{classId}": {
+      "schema": "ClassRoom",
+      "description": "School classrooms collection"
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Student profile collection"
+    },
+    "/questions/{questionId}": {
+      "schema": "QuestionBankItem",
+      "description": "Teacher question bank collection"
+    }
+  }
+}
